@@ -13,5 +13,5 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run the failing command
+      - name: Run a failing command
         run: exit 1  # This command will cause the workflow to fail
