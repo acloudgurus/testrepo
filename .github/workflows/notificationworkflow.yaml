@@ -2,14 +2,14 @@ name: Notify on Workflow Failure
 
 on:
   workflow_run:
-    workflows: ["Intentional Failure"]  # Must match the failed workflow name
+    workflows: ["Intentional Failure"]  # Ensure this matches the failing workflow
     types:
       - completed
 
 jobs:
   send_email_on_failure:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}  # Run only if failure
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}  # Runs only if failure
 
     steps:
       - name: Checkout Repository
@@ -21,13 +21,23 @@ jobs:
           python-version: "3.x"
 
       - name: Install Dependencies
-        run: pip install requests
+        run: pip install requests jq
+
+      - name: Get Latest Failed Workflow Run ID
+        id: get_failed_run_id
+        run: |
+          echo "Fetching latest failed run ID..."
+          FAILED_RUN_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/intentional_failure.yml/runs?status=failure&per_page=1" | jq -r '.workflow_runs[0].id')
+          
+          echo "LATEST_FAILED_RUN_ID=$FAILED_RUN_ID" >> $GITHUB_ENV
+          echo "🔴 Latest Failed Run ID: $FAILED_RUN_ID"
 
       - name: Run Failure Email Script
         run: python .github/workflows/send_email_on_failure.py
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_RUN_ID: ${{ github.event.workflow_run.id }}
+          GITHUB_RUN_ID: ${{ env.LATEST_FAILED_RUN_ID }}  # Use the latest failed run ID
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SMTP_SERVER: "smtp.gmail.com"
           SMTP_PORT: "587"
