@@ -1,0 +1,36 @@
+name: Notify on Workflow Failure
+
+on:
+  workflow_run:
+    workflows: ["Your Main Workflow Name"]
+    types:
+      - completed
+
+jobs:
+  send_email_on_failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install Dependencies
+        run: pip install requests
+
+      - name: Run Failure Email Script
+        run: python send_email_on_failure.py
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.event.workflow_run.id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SMTP_SERVER: "smtp.gmail.com"
+          SMTP_PORT: "587"
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_TO: "recipient1@example.com,recipient2@example.com"
