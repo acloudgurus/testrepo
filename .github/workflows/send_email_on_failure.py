@@ -23,7 +23,7 @@ headers = {"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd
 
 # Function to fetch failed jobs
 def get_failed_jobs():
-    print(f"Fetching failed jobs for run ID: {GITHUB_RUN_ID}")
+    print(f"Fetching failed jobs for run ID: {RUN_ID}")
 
     response = requests.get(API_URL, headers=headers)
     if response.status_code != 200:
@@ -58,12 +58,12 @@ def send_email(error_logs):
     body = f"""
     🚨 **GitHub Actions Workflow Failed!** 🚨
     🔹 **Repository**: {GITHUB_REPO}
-    🔹 **Workflow Run ID**: {GITHUB_RUN_ID}
+    🔹 **Workflow Run ID**: {RUN_ID}
     
     **Failure Details:**  
     {error_logs}
 
-    👉 View Workflow Logs: [Click Here](https://github.com/{GITHUB_REPO}/actions/runs/{GITHUB_RUN_ID})
+    👉 View Workflow Logs: [Click Here](https://github.com/{GITHUB_REPO}/actions/runs/{RUN_ID})
     """
 
     msg.attach(MIMEText(body, "plain"))
