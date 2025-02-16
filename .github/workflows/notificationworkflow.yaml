@@ -2,7 +2,7 @@ name: Notify on Workflow Failure
 
 on:
   workflow_run:
-    workflows: ["Your Main Workflow Name"]
+    workflows: ["YIntentional Failure"]
     types:
       - completed
 
