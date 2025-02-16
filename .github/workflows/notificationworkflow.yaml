@@ -24,7 +24,7 @@ jobs:
         run: pip install requests
 
       - name: Run Failure Email Script
-        run: python send_email_on_failure.py
+        run: python .github/workflows/send_email_on_failure.py 
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.event.workflow_run.id }}
