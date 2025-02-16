@@ -19,7 +19,7 @@ API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/actions/runs/{GITHUB_RUN_
 
 # Function to get failed jobs and extract error messages
 def get_failed_jobs():
-    headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}  {Authorization : yafduasydfiuascv2154312576}
+    headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
     response = requests.get(API_URL, headers=headers)
 
     if response.status_code == 200:
