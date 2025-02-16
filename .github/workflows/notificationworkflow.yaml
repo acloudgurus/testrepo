@@ -2,14 +2,14 @@ name: Notify on Workflow Failure
 
 on:
   workflow_run:
-    workflows: ["Intentional Failure"]
+    workflows: ["Intentional Failure"]  # Must match the failed workflow name
     types:
       - completed
 
 jobs:
   send_email_on_failure:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}  # Run only if failure
 
     steps:
       - name: Checkout Repository
@@ -24,7 +24,7 @@ jobs:
         run: pip install requests
 
       - name: Run Failure Email Script
-        run: python .github/workflows/send_email_on_failure.py 
+        run: python .github/workflows/send_email_on_failure.py
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.event.workflow_run.id }}
