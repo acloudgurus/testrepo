@@ -1,12 +1,13 @@
 import smtplib
 import requests
 import os
+import json
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 # GitHub Environment Variables
 GITHUB_REPO = os.getenv('GITHUB_REPOSITORY')
-GITHUB_RUN_ID = os.getenv('GITHUB_RUN_ID')
+GITHUB_RUN_ID = os.getenv('GITHUB_RUN_ID')  # Now correctly assigned
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 EMAIL_USER = os.getenv('EMAIL_USER')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
@@ -14,29 +15,38 @@ EMAIL_TO = os.getenv('EMAIL_TO')
 SMTP_SERVER = os.getenv('SMTP_SERVER', "smtp.gmail.com")
 SMTP_PORT = int(os.getenv('SMTP_PORT', 587))
 
-print("Here is the run id: ",GITHUB_RUN_ID)
-# GitHub API URL to fetch workflow job details
+# GitHub API to get job details
 API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/actions/runs/{GITHUB_RUN_ID}/jobs"
-print("Result of API Call: ", API_URL)
 
 # Headers for API authentication
-headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
+headers = {"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
 
 # Function to fetch failed jobs
 def get_failed_jobs():
+    print(f"Fetching failed jobs for run ID: {GITHUB_RUN_ID}")
+
     response = requests.get(API_URL, headers=headers)
-    if response.status_code == 200:
-        jobs = response.json().get("jobs", [])
-        error_logs = ""
-        for job in jobs:
-            if job["conclusion"] == "failure":
-                error_logs += f"❌ **Job Failed**: {job['name']}\n"
-                for step in job["steps"]:
-                    if step["conclusion"] == "failure":
-                        error_logs += f"   ⚠️ **Step**: {step['name']} - {step['conclusion']}\n"
-        return error_logs if error_logs else None
-    else:
-        return f"Error fetching workflow details: {response.text}"
+    if response.status_code != 200:
+        print(f"❌ Error fetching workflow details: {response.text}")
+        return None
+
+    jobs_data = response.json()
+    print(f"🔍 Full API Response:\n{json.dumps(jobs_data, indent=2)}")  # Print full response for debugging
+
+    jobs = jobs_data.get("jobs", [])
+    if not jobs:
+        print("⚠️ No jobs found in this workflow run.")
+        return None
+
+    error_logs = ""
+    for job in jobs:
+        if job.get("conclusion") == "failure":  # Ensure "conclusion" exists
+            error_logs += f"❌ **Job Failed**: {job['name']}\n"
+            for step in job.get("steps", []):  # Handle missing "steps" key safely
+                if step.get("conclusion") == "failure":  # Ensure "conclusion" exists in steps
+                    error_logs += f"   ⚠️ **Step**: {step['name']} - {step['conclusion']}\n"
+
+    return error_logs if error_logs else None
 
 # Function to send failure email
 def send_email(error_logs):
@@ -71,6 +81,7 @@ def send_email(error_logs):
 # Run the script
 error_logs = get_failed_jobs()
 if error_logs:
+    print(f"🚨 Errors Found:\n{error_logs}")  # Debugging output
     send_email(error_logs)
 else:
     print("✅ No failures detected, no email sent.")
