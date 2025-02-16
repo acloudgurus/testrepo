@@ -1,1 +1,17 @@
-hi
+name: Intentional Failure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  fail-job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run a failing command
+        run: exit 1  # This command will cause the workflow to fail
