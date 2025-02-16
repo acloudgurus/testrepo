@@ -43,9 +43,6 @@ jobs:
           echo "LATEST_FAILED_RUN_ID=$FAILED_RUN_ID" >> $GITHUB_ENV
           echo "🔴 Latest Failed Run ID: $FAILED_RUN_ID"
 
-      - name: Print Latest Failed Run ID
-        run: echo "✅ Confirmed Latest Failed Run ID: $LATEST_FAILED_RUN_ID"
-
       - name: Run Failure Email Script
         run: python .github/workflows/send_email_on_failure.py
         env:
