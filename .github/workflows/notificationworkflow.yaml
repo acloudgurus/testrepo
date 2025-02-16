@@ -47,7 +47,7 @@ jobs:
         run: python .github/workflows/send_email_on_failure.py
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_RUN_ID: $LATEST_FAILED_RUN_ID  # Corrected variable reference
+          RUN_ID: $LATEST_FAILED_RUN_ID  # Corrected variable reference
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SMTP_SERVER: "smtp.gmail.com"
           SMTP_PORT: "587"
