@@ -14,8 +14,10 @@ EMAIL_TO = os.getenv('EMAIL_TO')
 SMTP_SERVER = os.getenv('SMTP_SERVER', "smtp.gmail.com")
 SMTP_PORT = int(os.getenv('SMTP_PORT', 587))
 
+print("Here is the run id: ",GITHUB_RUN_ID)
 # GitHub API URL to fetch workflow job details
 API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/actions/runs/{GITHUB_RUN_ID}/jobs"
+print("Result of API Call: ", API_URL)
 
 # Headers for API authentication
 headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
