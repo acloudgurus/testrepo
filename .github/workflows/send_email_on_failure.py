@@ -15,6 +15,7 @@ EMAIL_TO = os.getenv('EMAIL_TO')
 SMTP_SERVER = os.getenv('SMTP_SERVER', "smtp.gmail.com")
 SMTP_PORT = int(os.getenv('SMTP_PORT', 587))
 
+print(RUN_ID)
 # GitHub API to get job details
 API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/actions/runs/{RUN_ID}/jobs"
 
