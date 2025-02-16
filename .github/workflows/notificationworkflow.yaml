@@ -9,7 +9,7 @@ on:
 jobs:
   send_email_on_failure:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}  # Runs only if failure
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
 
     steps:
       - name: Checkout Repository
@@ -23,21 +23,34 @@ jobs:
       - name: Install Dependencies
         run: pip install requests jq
 
-      - name: Get Latest Failed Workflow Run ID
+      - name: Get Workflow ID for Intentional Failure
+        id: get_workflow_id
+        run: |
+          echo "Fetching Workflow ID..."
+          WORKFLOW_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows" | jq -r '.workflows[] | select(.name=="Intentional Failure") | .id')
+
+          echo "WORKFLOW_ID=$WORKFLOW_ID" >> $GITHUB_ENV
+          echo "✅ Retrieved Workflow ID: $WORKFLOW_ID"
+
+      - name: Get Latest Failed Run ID
         id: get_failed_run_id
         run: |
           echo "Fetching latest failed run ID..."
           FAILED_RUN_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/intentional_failure.yml/runs?status=failure&per_page=1" | jq -r '.workflow_runs[0].id')
-          
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/$WORKFLOW_ID/runs?status=failure&per_page=1" | jq -r '.workflow_runs[0].id')
+
           echo "LATEST_FAILED_RUN_ID=$FAILED_RUN_ID" >> $GITHUB_ENV
           echo "🔴 Latest Failed Run ID: $FAILED_RUN_ID"
+
+      - name: Print Latest Failed Run ID
+        run: echo "✅ Confirmed Latest Failed Run ID: $LATEST_FAILED_RUN_ID"
 
       - name: Run Failure Email Script
         run: python .github/workflows/send_email_on_failure.py
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_RUN_ID: ${{ env.LATEST_FAILED_RUN_ID }}  # Use the latest failed run ID
+          GITHUB_RUN_ID: $LATEST_FAILED_RUN_ID  # Corrected variable reference
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SMTP_SERVER: "smtp.gmail.com"
           SMTP_PORT: "587"
