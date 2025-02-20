@@ -3,7 +3,7 @@ name: Intentional Failure
 on:
   push:
     branches:
-      - main
+      - test-branch
 
 jobs:
   fail-job:
